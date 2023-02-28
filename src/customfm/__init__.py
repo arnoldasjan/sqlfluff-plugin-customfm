@@ -1,0 +1,1 @@
+"""Customfm sqlfluff plugin."""

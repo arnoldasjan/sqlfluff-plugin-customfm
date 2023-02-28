@@ -1,0 +1,61 @@
+rule: CustomFM_L001
+
+no_forbidden_col_used:
+  fail_str: |
+    select
+      a,
+      sum(b),
+      row_number() over (partition by a order by b desc)
+    from tbl
+    left join tblb
+      on tblb.id = tbl.id
+    where true
+    group by a
+    order by a
+
+no_order_by_used:
+  pass_str: |
+    select
+      a,
+      b,
+      c,
+      row_number() over (partition by a order by b desc) as rn
+    from tbl
+
+forbidden_col_used:
+  pass_str: |
+    with plop as (
+      select
+        a,
+        sum(b)
+      
+      from tbl
+      left join tblb
+        on tblb.id = tbl.id
+      where true
+      group by a
+      union all
+      select
+        a,
+        sum(b)
+      
+      from tbl
+      left join tblb
+        on tblb.id = tbl.id
+      where true
+      group by a
+      order by a
+    )
+    
+    select a from plop
+
+too_many_blank_lines:
+  pass_str: |
+    select
+      a,
+      b,
+      c
+    
+    
+    
+    from tbl

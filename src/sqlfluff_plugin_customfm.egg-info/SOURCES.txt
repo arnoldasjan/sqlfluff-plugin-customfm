@@ -1,0 +1,11 @@
+MANIFEST.in
+setup.py
+src/customfm/__init__.py
+src/customfm/plugin_default_config.cfg
+src/customfm/rules.py
+src/sqlfluff_plugin_customfm.egg-info/PKG-INFO
+src/sqlfluff_plugin_customfm.egg-info/SOURCES.txt
+src/sqlfluff_plugin_customfm.egg-info/dependency_links.txt
+src/sqlfluff_plugin_customfm.egg-info/entry_points.txt
+src/sqlfluff_plugin_customfm.egg-info/requires.txt
+src/sqlfluff_plugin_customfm.egg-info/top_level.txt

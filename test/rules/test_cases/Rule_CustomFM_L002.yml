@@ -1,0 +1,36 @@
+rule: CustomFM_L002
+
+no_new_line_on_join:
+  fail_str: |
+    select
+      a,
+      sum(b)
+    from tbl
+    left join cd    on cd.a = tbl.a and cd.b = tbl.b
+    left join cd2 on cd2.a = tbl.a and cd2.b = tbl.b
+    group by a
+    order by a
+
+test_union:
+  fail_str: |
+    select
+      a,
+      case when true then 1 end,
+      sum(b)
+    from tbl
+    left join cd on cd.a = tbl.a and cd.b = tbl.b and (true or false)
+    left join cd2 on cd2.a = tbl.a and cd2.b = tbl.b union all
+    select * from bbd
+
+test_working:
+  pass_str: |
+    select
+      a,
+      case when true then 1 when false then 3 else 5 end,
+      sum(b),
+      row_number() over (partition by a order by b desc)
+    from tbl
+    left join cd 
+      on cd.a = tbl.a 
+      and cd.b = tbl.b 
+      and (true or false)

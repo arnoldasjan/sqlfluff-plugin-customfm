@@ -1,0 +1,14 @@
+rule: CustomFM_L004
+
+test_working:
+  fail_str: |
+    select
+      a,
+      case when true then 1 when false then 3 else 5 end,
+      sum(b),
+      row_number() over (partition by a order by b desc)
+    from tbl
+    left join cd 
+      on cd.a = tbl.a 
+      and cd.b = tbl.b 
+      and (true or false)
