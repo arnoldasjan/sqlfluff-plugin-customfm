@@ -1,0 +1,20 @@
+rule: CustomFM_L005
+
+test_multiple_selects:
+  fail_str: |
+    with a as (
+      select av from b
+    )
+    
+    select
+      av,
+      1
+    from a
+
+test_wildcard_select:
+  pass_str: |
+    with a as (
+      select av from b
+    )
+    
+    select * from a

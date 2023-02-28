@@ -17,7 +17,13 @@ from sqlfluff.core.config import ConfigLoader
 @hookimpl
 def get_rules() -> List[Type[BaseRule]]:
     """Get plugin rules."""
-    return [Rule_CustomFM_L001, Rule_CustomFM_L002, Rule_CustomFM_L003, Rule_CustomFM_L004]
+    return [
+        Rule_CustomFM_L001,
+        Rule_CustomFM_L002,
+        Rule_CustomFM_L003,
+        Rule_CustomFM_L004,
+        Rule_CustomFM_L005,
+    ]
 
 
 @hookimpl
@@ -105,7 +111,9 @@ class Rule_CustomFM_L001(BaseRule):
     """
 
     groups = ("all", "core")
-    crawl_behaviour = SegmentSeekerCrawler({"from_clause", "where_clause", "groupby_clause", "orderby_clause"})
+    crawl_behaviour = SegmentSeekerCrawler(
+        {"from_clause", "where_clause", "groupby_clause", "orderby_clause"}
+    )
 
     def _eval(self, context: RuleContext) -> Optional[List[LintResult]]:
         """Blank line expected but not found before keyword (select, from etc.) clause."""
@@ -117,35 +125,44 @@ class Rule_CustomFM_L001(BaseRule):
         if not parent_seg[0].is_type("window_specification"):
             children = Segments(context.parent_stack[-1]).children()
 
-            newlines_before = get_newlines(elements=children, start_seg=seg, is_reversed=True)
+            newlines_before = get_newlines(
+                elements=children, start_seg=seg, is_reversed=True
+            )
 
             newlines_count = len(newlines_before)
 
             if newlines_count != 2:
-
-                first_not_meta_element = children.reversed().select(
-                    select_if=sp.not_(sp.is_meta()),
-                    start_seg=seg[0],
-                ).first()
+                first_not_meta_element = (
+                    children.reversed()
+                    .select(
+                        select_if=sp.not_(sp.is_meta()),
+                        start_seg=seg[0],
+                    )
+                    .first()
+                )
 
                 if newlines_count < 2:
-                    fixes.append(LintFix.create_before(
-                        anchor_segment=first_not_meta_element[0],
-                        edit_segments=[NewlineSegment()] * (2 - newlines_count)
-                    ))
+                    fixes.append(
+                        LintFix.create_before(
+                            anchor_segment=first_not_meta_element[0],
+                            edit_segments=[NewlineSegment()] * (2 - newlines_count),
+                        )
+                    )
 
                 else:
                     ws_to_delete = get_elements_to_delete(
                         elements=children,
                         start_seg=first_not_meta_element,
-                        is_reversed=True
+                        is_reversed=True,
                     )
 
                     fixes.extend([LintFix.delete(ws) for ws in ws_to_delete])
-                    fixes.append(LintFix.create_before(
-                        anchor_segment=first_not_meta_element[0],
-                        edit_segments=[NewlineSegment()] * 2
-                    ))
+                    fixes.append(
+                        LintFix.create_before(
+                            anchor_segment=first_not_meta_element[0],
+                            edit_segments=[NewlineSegment()] * 2,
+                        )
+                    )
 
         if fixes:
             error_buffer.append(LintResult(anchor=seg[0], fixes=fixes))
@@ -455,67 +472,170 @@ class Rule_CustomFM_L004(BaseRule):
         window_spec = FunctionalContext(context).segment
         upper_seg = Segments(context.parent_stack[-1])
 
-        newlines_before = len(get_newlines(elements=upper_seg.children(), start_seg=window_spec, is_reversed=True))
-        newlines_after = len(get_newlines(elements=upper_seg.children(), start_seg=window_spec, is_reversed=False))
+        newlines_before = len(
+            get_newlines(
+                elements=upper_seg.children(), start_seg=window_spec, is_reversed=True
+            )
+        )
+        newlines_after = len(
+            get_newlines(
+                elements=upper_seg.children(), start_seg=window_spec, is_reversed=False
+            )
+        )
 
         if newlines_before != 1:
-            meta_element = upper_seg.children().reversed().select(
-                select_if=sp.is_meta(),
-                start_seg=window_spec[0],
-            ).first()
+            meta_element = (
+                upper_seg.children()
+                .reversed()
+                .select(
+                    select_if=sp.is_meta(),
+                    start_seg=window_spec[0],
+                )
+                .first()
+            )
 
             if newlines_before < 1:
-                fixes.append(LintFix.create_before(anchor_segment=meta_element[0], edit_segments=[NewlineSegment()]))
+                fixes.append(
+                    LintFix.create_before(
+                        anchor_segment=meta_element[0], edit_segments=[NewlineSegment()]
+                    )
+                )
 
             else:
                 ws_to_delete = get_elements_to_delete(
-                    elements=upper_seg.children(), start_seg=meta_element, is_reversed=True
+                    elements=upper_seg.children(),
+                    start_seg=meta_element,
+                    is_reversed=True,
                 )
 
                 fixes.extend([LintFix.delete(ws) for ws in ws_to_delete])
-                fixes.append(LintFix.create_before(anchor_segment=meta_element[0], edit_segments=[NewlineSegment()]))
+                fixes.append(
+                    LintFix.create_before(
+                        anchor_segment=meta_element[0], edit_segments=[NewlineSegment()]
+                    )
+                )
 
         if newlines_after != 1:
-            meta_element = upper_seg.children().select(
-                select_if=sp.is_meta(),
-                start_seg=window_spec[0],
-            ).first()
+            meta_element = (
+                upper_seg.children()
+                .select(
+                    select_if=sp.is_meta(),
+                    start_seg=window_spec[0],
+                )
+                .first()
+            )
 
             if newlines_after < 1:
-                fixes.append(LintFix.create_after(anchor_segment=meta_element[0], edit_segments=[NewlineSegment()]))
+                fixes.append(
+                    LintFix.create_after(
+                        anchor_segment=meta_element[0], edit_segments=[NewlineSegment()]
+                    )
+                )
 
             else:
                 ws_to_delete = get_elements_to_delete(
-                    elements=upper_seg.children(), start_seg=meta_element, is_reversed=False
+                    elements=upper_seg.children(),
+                    start_seg=meta_element,
+                    is_reversed=False,
                 )
 
                 fixes.extend([LintFix.delete(ws) for ws in ws_to_delete])
-                fixes.append(LintFix.create_after(anchor_segment=meta_element[0], edit_segments=[NewlineSegment()]))
+                fixes.append(
+                    LintFix.create_after(
+                        anchor_segment=meta_element[0], edit_segments=[NewlineSegment()]
+                    )
+                )
 
         orderby = window_spec.children(sp.is_type("orderby_clause"))
 
         if orderby:
-            newlines_before_orderby = len(get_newlines(
-                elements=window_spec_children, start_seg=orderby, is_reversed=True
-            ))
+            newlines_before_orderby = len(
+                get_newlines(
+                    elements=window_spec_children, start_seg=orderby, is_reversed=True
+                )
+            )
 
             if newlines_before_orderby != 1:
                 if newlines_before_orderby < 1:
                     fixes.append(
-                        LintFix.create_before(anchor_segment=orderby[0], edit_segments=[NewlineSegment()])
+                        LintFix.create_before(
+                            anchor_segment=orderby[0], edit_segments=[NewlineSegment()]
+                        )
                     )
 
                 else:
                     ws_to_delete = get_elements_to_delete(
-                        elements=window_spec_children, start_seg=orderby, is_reversed=True
+                        elements=window_spec_children,
+                        start_seg=orderby,
+                        is_reversed=True,
                     )
 
                     fixes.extend([LintFix.delete(ws) for ws in ws_to_delete])
                     fixes.append(
-                        LintFix.create_before(anchor_segment=orderby[0], edit_segments=[NewlineSegment()])
+                        LintFix.create_before(
+                            anchor_segment=orderby[0], edit_segments=[NewlineSegment()]
+                        )
                     )
 
         if fixes:
             error_buffer.append(LintResult(anchor=window_spec[0], fixes=fixes))
+
+        return error_buffer or None
+
+
+@document_groups
+class Rule_CustomFM_L005(BaseRule):
+    """Last line should always include a select * from
+
+    **Anti-pattern**
+
+    Multiple elements are selected in the last line
+
+    .. code-block:: sql
+
+        SELECT
+            a,
+            b,
+            c
+        FROM foo
+
+    **Best practice**
+
+    Only select * from in the last line
+
+    .. code-block:: sql
+
+        select * from foo
+    """
+
+    groups = ("all",)
+    crawl_behaviour = SegmentSeekerCrawler({"with_compound_statement"})
+
+    def _eval(self, context: RuleContext):
+        error_buffer = []
+        assert context.segment.is_type("with_compound_statement")
+        select_clause = (
+            FunctionalContext(context)
+            .segment.children(sp.is_type("select_statement"))
+            .children(sp.is_type("select_clause"))
+        )
+        select_elements = select_clause.children(sp.is_type("select_clause_element"))
+
+        if len(select_elements) > 1:
+            error_buffer.append(
+                LintResult(
+                    anchor=select_clause[0],
+                    description="Multiple select elements found",
+                )
+            )
+
+        wildcard = select_elements.children(sp.is_type("wildcard_expression"))
+        if len(wildcard) != 1:
+            error_buffer.append(
+                LintResult(
+                    anchor=select_clause[0],
+                    description="Only element should be wildcard",
+                )
+            )
 
         return error_buffer or None
