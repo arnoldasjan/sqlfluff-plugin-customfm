@@ -1,6 +1,6 @@
 rule: CustomFM_L001
 
-no_forbidden_col_used:
+case1:
   fail_str: |
     select
       a,
@@ -13,8 +13,8 @@ no_forbidden_col_used:
     group by a
     order by a
 
-no_order_by_used:
-  pass_str: |
+case2:
+  fail_str: |
     select
       a,
       b,
@@ -22,32 +22,47 @@ no_order_by_used:
       row_number() over (partition by a order by b desc) as rn
     from tbl
 
-forbidden_col_used:
-  pass_str: |
-    with plop as (
-      select
-        a,
-        sum(b)
-      
-      from tbl
-      left join tblb
-        on tblb.id = tbl.id
-      where true
-      group by a
-      union all
-      select
-        a,
-        sum(b)
-      
-      from tbl
-      left join tblb
-        on tblb.id = tbl.id
-      where true
-      group by a
-      order by a
+case3:
+  fail_str: |
+    with prep as (
+        select *
+        from tbla
+    ),
+    
+    his as (
+        select *
+        from tblb
     )
     
-    select a from plop
+    select
+        fct_cvonline_posts.id,
+        client_model.is_promoted,
+    
+        case
+            when true
+                then 1
+            when false
+                then 3
+            else 5
+        end   as case_exp,
+    
+        2 > 1 as two_more_than_one,
+        row_number() over (
+            partition by fct_cvonline_posts.id
+            order by client_model.is_promoted desc
+        )     as rn
+    
+    from prep
+    left join his
+        on client_model.id = prep.id
+        and true
+        and (true or false)
+    
+    where true
+    
+    group by 1
+    
+    order by 2
 
 too_many_blank_lines:
   pass_str: |
