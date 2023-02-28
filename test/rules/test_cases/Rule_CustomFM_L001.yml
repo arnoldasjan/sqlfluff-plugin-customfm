@@ -65,12 +65,21 @@ case3:
     order by 2
 
 too_many_blank_lines:
-  pass_str: |
+  fail_str: |
     select
       a,
       b,
       c
     
     
+    
+    from tbl
+
+added_line:
+  pass_str: |
+    select
+      a,
+      b,
+      c
     
     from tbl
