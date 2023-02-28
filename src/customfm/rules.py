@@ -585,7 +585,7 @@ class Rule_CustomFM_L004(BaseRule):
 
 @document_groups
 class Rule_CustomFM_L005(BaseRule):
-    """Last line should always include a select * from
+    """Last select should always include only a select * from
 
     **Anti-pattern**
 
@@ -625,7 +625,6 @@ class Rule_CustomFM_L005(BaseRule):
             error_buffer.append(
                 LintResult(
                     anchor=select_clause[0],
-                    description="Multiple select elements found",
                 )
             )
 
@@ -635,7 +634,6 @@ class Rule_CustomFM_L005(BaseRule):
                 error_buffer.append(
                     LintResult(
                         anchor=select_clause[0],
-                        description="Only element should be wildcard",
                     )
                 )
 
