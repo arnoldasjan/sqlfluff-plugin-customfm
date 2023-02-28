@@ -629,13 +629,14 @@ class Rule_CustomFM_L005(BaseRule):
                 )
             )
 
-        wildcard = select_elements.children(sp.is_type("wildcard_expression"))
-        if len(wildcard) != 1:
-            error_buffer.append(
-                LintResult(
-                    anchor=select_clause[0],
-                    description="Only element should be wildcard",
+        else:
+            wildcard = select_elements.children(sp.is_type("wildcard_expression"))
+            if len(wildcard) != 1:
+                error_buffer.append(
+                    LintResult(
+                        anchor=select_clause[0],
+                        description="Only element should be wildcard",
+                    )
                 )
-            )
 
         return error_buffer or None
