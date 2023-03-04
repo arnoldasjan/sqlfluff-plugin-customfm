@@ -23,6 +23,7 @@ def get_rules() -> List[Type[BaseRule]]:
         Rule_CustomFM_L003,
         Rule_CustomFM_L004,
         Rule_CustomFM_L005,
+        Rule_CustomFM_L006,
     ]
 
 
@@ -638,3 +639,46 @@ class Rule_CustomFM_L005(BaseRule):
                 )
 
         return error_buffer or None
+
+
+@document_groups
+class Rule_CustomFM_L006(BaseRule):
+    """Check if last CTE should not be named "rename"
+
+    **Anti-pattern**
+
+    Last CTE not named rename
+
+    .. code-block:: sql
+
+        with prep as (
+            select * from tbla
+        )
+
+        select * from prep
+
+    **Best practice**
+
+    Last CTE named rename
+
+    .. code-block:: sql
+
+        with rename as (
+            select * from tbla
+        )
+
+        select * from rename
+    """
+
+    groups = ("all",)
+    crawl_behaviour = SegmentSeekerCrawler({"with_compound_statement"})
+
+    def _eval(self, context: RuleContext) -> LintResult:
+        assert context.segment.is_type("with_compound_statement")
+        with_statement = Segments(context.segment)
+
+        last_cte = with_statement.children(sp.is_type("common_table_expression")).last()
+        alias = last_cte.children(sp.is_type("naked_identifier")).first()
+        if alias[0].raw != 'rename':
+            return LintResult(anchor=last_cte[0])
+        return LintResult()

@@ -1,0 +1,44 @@
+rule: CustomFM_L006
+
+test_multiple_selects:
+  fail_str: |
+    with a as (
+      select av from b
+    )
+    
+    select
+      av,
+      1
+    from a
+
+test_wildcard_select:
+  pass_str: |
+    with rename as (
+      select av from b
+    )
+    
+    select * from rename
+
+test_long_with_wrong:
+  fail_str: |
+    with a as (
+      select av from b
+    ),
+    
+    b as (
+      select 1
+    )
+    
+    select * from rename
+
+test_long_with_right:
+  pass_str: |
+    with a as (
+      select av from b
+    ),
+    
+    rename as (
+      select 1
+    )
+    
+    select * from rename
