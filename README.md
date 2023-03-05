@@ -63,3 +63,8 @@ dbt_modules/
 dbt_packages/
 macros/
 ```
+
+After this to start using sqlfluff run these commands:
+
+
+`sqlfluff lint path_to_file_or_folder` and `sqlfluff fix path_to_file_or_folder`
